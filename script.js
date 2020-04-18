@@ -10,6 +10,7 @@ let blockSize = 10;
 let widthInBlocks = width / blockSize;
 let heightInBlocks = height / blockSize;
 let score = 0;
+let animationTime = 100;
 
 let drawBolder = function () {
     ctx.fillStyle = "Gray";
@@ -34,6 +35,7 @@ let gameOver = function () {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText("Конец игры", width / 2, height / 2);
+    animationTime=100000000;
 };
 
 let circle = function (x, y, radius, fillCircle) {
@@ -75,14 +77,24 @@ let Snake = function () {
         new Block(6, 5),
         new Block(5, 5),
     ];
+    this.colors = [
+        "red",
+        "orange",
+        "green"
+    ];
 
     this.direction = "right";
     this.nextDirection = "right";
 };
 
 Snake.prototype.draw = function () {
-    for (let i = 0; i < this.segments.length; i++) {
-        this.segments[i].drawSquare("Blue");
+    this.segments[0].drawSquare(this.colors[2]);
+    for (let i = 1; i < this.segments.length; i++) {
+        if (i % 2 == 0) {
+            this.segments[i].drawSquare(this.colors[0]);
+        } else {
+            this.segments[i].drawSquare(this.colors[1]);
+        }
     }
 };
 
@@ -111,6 +123,7 @@ Snake.prototype.move = function () {
     if (newHead.equal(apple.position)) {
         score++;
         apple.move();
+        animationTime -= 5;
     } else {
         this.segments.pop();
     }
@@ -166,7 +179,7 @@ Snake.prototype.setDirection = function (newDirection) {
 }
 
 let Apple = function () {
-    this.position = new Block (10, 10);
+    this.position = new Block(10, 10);
 }
 
 Apple.prototype.draw = function () {
@@ -176,18 +189,23 @@ Apple.prototype.draw = function () {
 Apple.prototype.move = function () {
     let randomCol = Math.floor(Math.random() * (widthInBlocks - 2)) + 1;
     let randomRow = Math.floor(Math.random() * (heightInBlocks - 2)) + 1;
-    this.position = new Block (randomCol, randomRow);
+    this.position = new Block(randomCol, randomRow);
 };
- 
 
 
 let snake = new Snake();
 let apple = new Apple();
-let intervalId = setInterval(function () {
+
+let gameLoop = function () {
     ctx.clearRect(0, 0, width, height);
     drawScore();
     snake.move();
     snake.draw();
     apple.draw();
     drawBolder();
-}, 100)
+    //взял setTimeout из учебника вместо setInternal.
+    //не совсем понимаю gameLoop-setTimeout-gameLoop. Как это работает?
+    setTimeout(gameLoop, animationTime);
+};
+
+let intervalId = gameLoop();
